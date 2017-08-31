@@ -26,6 +26,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+from operator import attrgetter, itemgetter, methodcaller
 import collections
 import logging
 logger = logging.getLogger('root')
@@ -137,7 +138,7 @@ def dump(db, f, **options):
             output_names[frame][signal] = name
 
     # Frames
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         multiplex_written = False
         if bo.transmitter.__len__() == 0:
             bo.addTransmitter("Vector__XXX")
@@ -157,7 +158,7 @@ def dump(db, f, **options):
             normalizeName(s.name, whitespaceReplacement) for s in bo.signals
         )
         duplicate_signal_counter = collections.Counter()
-        for signal in bo.signals:
+        for signal in sorted(bo.signals, key=methodcaller('getStartbit',bitNumbering=1)):
             if signal.multiplex == 'Multiplexor' and multiplex_written:
                 continue
 
@@ -201,7 +202,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # second Sender:
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         if bo.transmitter.__len__() > 1:
             f.write(
                 ("BO_TX_BU_ %d : %s;\n" %
@@ -209,7 +210,7 @@ def dump(db, f, **options):
                      bo.transmitter))).encode(dbcExportEncoding))
 
     # frame comments
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         if bo.comment is not None and bo.comment.__len__() > 0:
             f.write(
                 ("CM_ BO_ " +
@@ -224,7 +225,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # signal comments
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         for signal in bo.signals:
             if signal.comment is not None and signal.comment.__len__() > 0:
                 name = output_names[bo][signal]
@@ -338,10 +339,10 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # messages-attributes:
-    for frame in db.frames:
+    for frame in sorted(db.frames, key=attrgetter('id')):
         for attrib, val in sorted(frame.attributes.items()):
             if db.frameDefines[attrib].type == "STRING":
-               val = '"' + val + '"'
+                val = '"' + val + '"'
             elif not val:
                 val = '""'
             f.write(('BA_ "' + attrib + '" BO_ %d ' %
@@ -349,7 +350,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # signal-attributes:
-    for frame in db.frames:
+    for frame in sorted(db.frames, key=attrgetter('id')):
         for signal in frame.signals:
             for attrib, val in sorted(signal.attributes.items()):
                 name = output_names[frame][signal]
@@ -377,7 +378,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # signal-values:
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         multiplex_written = False
         for signal in bo.signals:
             if signal.multiplex == 'Multiplexor' and multiplex_written:
@@ -397,7 +398,7 @@ def dump(db, f, **options):
                 f.write(";\n".encode(dbcExportEncoding))
 
     # signal-groups:
-    for bo in db.frames:
+    for bo in sorted(db.frames, key=attrgetter('id')):
         for sigGroup in bo.SignalGroups:
             f.write(("SIG_GROUP_ " + str(bo.id) + " " + sigGroup.name +
                      " " + str(sigGroup.id) + " :").encode(dbcExportEncoding))
