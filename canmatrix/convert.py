@@ -50,12 +50,16 @@ def convert(infile, outfileName, **options):
         if 'ecus' in options and options['ecus'] is not None:
             ecuList = options['ecus'].split(',')
             db = cm.CanMatrix()
+            for ns, val in dbs[name].NewSymbols.items():
+                db.addNewSymbol(ns,val)
             for ecu in ecuList:
                 logger.info("Copying ECU " + ecu)
                 cmcp.copyBUwithFrames(ecu, dbs[name], db)
         if 'frames' in options and options['frames'] is not None:
             frameList = options['frames'].split(',')
             db = cm.CanMatrix()
+            for ns, val in dbs[name].NewSymbols.items():
+                db.addNewSymbol(ns,val)
             for frame in frameList:
                 logger.info("Copying Frame " + frame)
                 cmcp.copyFrame(frame, dbs[name], db)
