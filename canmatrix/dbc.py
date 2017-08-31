@@ -86,7 +86,11 @@ def dump(db, f, **options):
     f.write("VERSION \"created by canmatrix\"\n\n".encode(dbcExportEncoding))
     f.write("\n".encode(dbcExportEncoding))
 
-    f.write("NS_ :\n\nBS_:\n\n".encode(dbcExportEncoding))
+    f.write("NS_ :\n".encode(dbcExportEncoding))
+    for ns, val in db.NewSymbols.items():
+        f.write(('\t' + val + '\n').encode(dbcExportEncoding))
+    f.write("\n".encode(dbcExportEncoding))
+    f.write("BS_:\n\n".encode(dbcExportEncoding))
 
     # Boardunits
     f.write("BU_: ".encode(dbcExportEncoding))
@@ -413,6 +417,7 @@ def load(f, **options):
         dbcCommentEncoding = dbcImportEncoding
 
     i = 0
+    NS = 0
 
     class FollowUps(object):
         nothing, signalComment, frameComment, boardUnitComment, globalComment = list(
@@ -642,6 +647,20 @@ def load(f, **options):
                 for ele in myTempListe:
                     if len(ele.strip()) > 1:
                         db._BUs.add(BoardUnit(ele))
+
+        elif decoded.startswith("BS_:"):
+            NS = 0
+
+        elif decoded.startswith("NS_ :"):
+            NS = 1
+
+        elif NS > 0:
+            pattern = "([^n]+[\w]+)"
+            regexp = re.compile(pattern)
+            temp = regexp.match(decoded)
+            if temp:
+                db.addNewSymbol(NS-1,temp.group(1))
+            NS = NS + 1
 
         elif decoded.startswith("VAL_ "):
             regexp = re.compile("^VAL\_ (\w+) (\w+) (.*);")
