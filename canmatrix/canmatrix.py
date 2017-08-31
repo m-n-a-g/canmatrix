@@ -814,6 +814,7 @@ class CanMatrix(object):
     """
     The Can-Matrix-Object
     _attributes (global canmatrix-attributes),
+    _NS (list of NewSymbols),
     _BUs (list of boardunits/ECUs),
     _fl (list of Frames)
     _signalDefines (list of signal-attribute types)
@@ -825,6 +826,7 @@ class CanMatrix(object):
 
     def __init__(self):
         self._attributes = {}
+        self._NS = {}
         self._BUs = BoardUnitList()
         self._fl = FrameList()
         self._signalDefines = {}
@@ -836,6 +838,10 @@ class CanMatrix(object):
     @property
     def attributes(self):
         return self._attributes
+
+    @property
+    def NewSymbols(self):
+        return self._NS
 
     @property
     def boardUnits(self):
@@ -877,6 +883,13 @@ class CanMatrix(object):
         """
         if attribute not in self._attributes:
             self._attributes[attribute] = value
+
+    def addNewSymbol(self, newsymbol, value):
+        """
+        add newsymbol to newsymbol-list of canmatrix
+        """
+        if newsymbol not in self._NS:
+            self._NS[newsymbol] = value
 
     def addSignalDefines(self, type, definition):
         """
