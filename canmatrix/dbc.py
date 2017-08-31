@@ -718,9 +718,8 @@ def load(f, **options):
                                     temp_raw.group(2).decode(dbcImportEncoding))
 
         elif decoded.startswith("BA_ "):
-            regexp = re.compile("^BA\_ +\"[A-Za-z0-9[-_ .]+\" +(.+)")
+            regexp = re.compile("^BA\_ +\"[A-Za-z0-9[-_(-\/ .]+\" +(.+)")
             tempba = regexp.match(decoded)
-
             if tempba.group(1).strip().startswith("BO_ "):
                 regexp = re.compile("^BA\_ \"(.*)\" BO\_ (\w+) (.+);")
                 temp = regexp.match(decoded)
@@ -740,7 +739,7 @@ def load(f, **options):
                     temp.group(3))
             else:
                 regexp = re.compile(
-                    "^BA\_ \"([A-Za-z0-9\-\_]+)\" +([\"A-Za-z0-9\-\_]+);")
+                "^BA\_ \"([A-Za-z0-9[-_(-\/ .]+)\" +([\"A-Za-z0-9[-_(-\/ .]+);")
                 temp = regexp.match(decoded)
                 if temp:
                     db.addAttribute(temp.group(1), temp.group(2))
@@ -784,7 +783,7 @@ def load(f, **options):
             frame.extended = 1
     for define in db.globalDefines:
         if db.globalDefines[define].type == "STRING":
-            if db.attributes.has_key(define):
+            if define in db.attributes:
                 db.attributes[define] = db.attributes[define][1:-1]
     for define in db.buDefines:
         if db.buDefines[define].type == "STRING":
