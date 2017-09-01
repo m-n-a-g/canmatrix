@@ -477,7 +477,7 @@ def load(f, **options):
                                   dlc=temp.group(3),
                                   transmitter=temp.group(4).split()))
         elif decoded.startswith("SG_ "):
-            pattern = "^SG\_ (\w+) : (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) \[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
+            pattern = "^SG\_ (\w+) : (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
             regexp = re.compile(pattern)
             temp = regexp.match(decoded)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
@@ -502,7 +502,7 @@ def load(f, **options):
                     tempSig.setStartbit(int(temp.group(2)), bitNumbering=1)
                 db._fl.addSignalToLastFrame(tempSig)
             else:
-                pattern = "^SG\_ (\w+) (\w+) *: (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) \[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
+                pattern = "^SG\_ (\w+) (\w+) *: (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
                 regexp = re.compile(pattern)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
