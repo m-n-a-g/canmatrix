@@ -24,7 +24,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 
-from .log import setup_logger, set_log_level
+from canmatrix.log import setup_logger, set_log_level
 logger = setup_logger('root')
 import types
 import sys
