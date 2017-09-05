@@ -83,6 +83,13 @@ def dump(db, f, **options):
         writeValTable = options["writeValTable"]
     else:
         writeValTable = True
+    if 'dbcExportSorted' in options:
+        if True == options["dbcExportSorted"]:
+            dbFrames = sorted(db.frames, key=attrgetter('id'))
+        else:
+            dbFrames = db.frames
+    else:
+        dbFrames = db.frames
 
     f.write("VERSION \"created by canmatrix\"\n\n".encode(dbcExportEncoding))
     f.write("\n".encode(dbcExportEncoding))
@@ -138,7 +145,7 @@ def dump(db, f, **options):
             output_names[frame][signal] = name
 
     # Frames
-    for bo in sorted(db.frames, key=attrgetter('id')):
+    for bo in dbFrames:
         multiplex_written = False
         if bo.transmitter.__len__() == 0:
             bo.addTransmitter("Vector__XXX")
@@ -202,7 +209,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # second Sender:
-    for bo in sorted(db.frames, key=attrgetter('id')):
+    for bo in dbFrames:
         if bo.transmitter.__len__() > 1:
             f.write(
                 ("BO_TX_BU_ %d : %s;\n" %
@@ -210,35 +217,65 @@ def dump(db, f, **options):
                      bo.transmitter))).encode(dbcExportEncoding))
 
     # frame comments
-    for bo in sorted(db.frames, key=attrgetter('id')):
+    for bo in dbFrames:
         if bo.comment is not None and bo.comment.__len__() > 0:
             f.write(
                 ("CM_ BO_ " +
                  "%d " %
                  bo.id +
-                 ' "').encode(dbcExportEncoding))
+                 '"').encode(dbcExportEncoding))
             f.write(
                 bo.comment.replace(
                     '"',
                     '\\"').encode(dbcExportCommentEncoding, 'ignore'))
             f.write('";\n'.encode(dbcExportEncoding))
+            if 'dbcExportSorted' not in options or False == options["dbcExportSorted"]:
+                    for signal in bo.signals:
+                        if signal.comment is not None and signal.comment.__len__() > 0:
+                            name = output_names[bo][signal]
+                            f.write(
+                                ("CM_ SG_ " +
+                                 "%d " %
+                                 bo.id +
+                                name +
+                                 '"').encode(dbcExportEncoding, 'ignore'))
+                            f.write(
+                                   signal.comment.replace(
+                                        '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                            f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
+        elif bo.comment is None:
+            for signal in bo.signals:
+                if signal.comment is not None and signal.comment.__len__() > 0:
+                    name = output_names[bo][signal]
+                    f.write(
+                        ("CM_ SG_ " +
+                         "%d " %
+                         bo.id +
+                         name +
+                         '"').encode(dbcExportEncoding, 'ignore'))
+                    f.write(
+                            signal.comment.replace(
+                                '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                    f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
+
     f.write("\n".encode(dbcExportEncoding))
 
     # signal comments
-    for bo in sorted(db.frames, key=attrgetter('id')):
-        for signal in bo.signals:
-            if signal.comment is not None and signal.comment.__len__() > 0:
-                name = output_names[bo][signal]
-                f.write(
-                    ("CM_ SG_ " +
-                     "%d " %
-                     bo.id +
-                     name +
-                     ' "').encode(dbcExportEncoding, 'ignore'))
-                f.write(
-                        signal.comment.replace(
-                            '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
-                f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
+    if True == options["dbcExportSorted"]:
+        for bo in dbFrames:
+            for signal in bo.signals:
+                if signal.comment is not None and signal.comment.__len__() > 0:
+                    name = output_names[bo][signal]
+                    f.write(
+                        ("CM_ SG_ " +
+                         "%d " %
+                         bo.id +
+                         name +
+                         '"').encode(dbcExportEncoding, 'ignore'))
+                    f.write(
+                            signal.comment.replace(
+                                '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                    f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
 
     f.write("\n".encode(dbcExportEncoding))
 
@@ -258,7 +295,7 @@ def dump(db, f, **options):
     defaults = {}
     for (type, define) in sorted(list(db.frameDefines.items())):
         f.write(
-            ('BA_DEF_ BO_ "' +
+            ('BA_DEF_ SG_ "' +
              type +
              '" ').encode(dbcExportEncoding) +
             define.definition.encode(
@@ -269,7 +306,7 @@ def dump(db, f, **options):
             defaults[type] = define.defaultValue
     for (type, define) in sorted(list(db.signalDefines.items())):
         f.write(
-            ('BA_DEF_ SG_ "' +
+            ('BA_DEF_ BO_ "' +
              type +
              '" ').encode(dbcExportEncoding) +
             define.definition.encode(
@@ -339,7 +376,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # messages-attributes:
-    for frame in sorted(db.frames, key=attrgetter('id')):
+    for frame in dbFrames:
         for attrib, val in sorted(frame.attributes.items()):
             if db.frameDefines[attrib].type == "STRING":
                 val = '"' + val + '"'
@@ -350,7 +387,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # signal-attributes:
-    for frame in sorted(db.frames, key=attrgetter('id')):
+    for frame in dbFrames:
         for signal in frame.signals:
             for attrib, val in sorted(signal.attributes.items()):
                 name = output_names[frame][signal]
@@ -378,7 +415,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # signal-values:
-    for bo in sorted(db.frames, key=attrgetter('id')):
+    for bo in dbFrames:
         multiplex_written = False
         for signal in bo.signals:
             if signal.multiplex == 'Multiplexor' and multiplex_written:
@@ -398,7 +435,7 @@ def dump(db, f, **options):
                 f.write(";\n".encode(dbcExportEncoding))
 
     # signal-groups:
-    for bo in sorted(db.frames, key=attrgetter('id')):
+    for bo in dbFrames:
         for sigGroup in bo.SignalGroups:
             f.write(("SIG_GROUP_ " + str(bo.id) + " " + sigGroup.name +
                      " " + str(sigGroup.id) + " :").encode(dbcExportEncoding))
@@ -504,6 +541,7 @@ def load(f, **options):
             else:
                 pattern = "^SG\_ (\w+) (\w+) *: (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
                 regexp = re.compile(pattern)
+                print(decoded)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
                 temp_raw = regexp_raw.match(l)
