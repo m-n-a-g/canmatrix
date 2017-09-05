@@ -293,7 +293,7 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     defaults = {}
-    for (type, define) in sorted(list(db.frameDefines.items())):
+    for (type, define) in sorted(list(db.signalDefines.items())):
         f.write(
             ('BA_DEF_ SG_ "' +
              type +
@@ -304,7 +304,7 @@ def dump(db, f, **options):
             ';\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
-    for (type, define) in sorted(list(db.signalDefines.items())):
+    for (type, define) in sorted(list(db.frameDefines.items())):
         f.write(
             ('BA_DEF_ BO_ "' +
              type +
