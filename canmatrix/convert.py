@@ -222,6 +222,9 @@ def main():
     parser.add_option("", "--dbcExportCommentEncoding",
                       dest="dbcExportCommentEncoding", default="iso-8859-1",
                       help="Export charset of comments in dbc\ndefault iso-8859-1")
+    parser.add_option("", "--dbcExportSorted", action="store_true",
+                      dest="dbcExportSorted", default=False,
+                      help="Export dbc content sorted by Frame ID\ndefault False")
 
     parser.add_option("", "--dbfImportEncoding",
                       dest="dbfImportEncoding", default="iso-8859-1",
