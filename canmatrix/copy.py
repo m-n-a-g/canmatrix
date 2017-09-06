@@ -85,6 +85,11 @@ def copyBUwithFrames(buId, sourceDb, targetDb):
         targetDb.addDefineDefault(
             define, defaults[define])
 
+    # copy global-attributes
+    for (attrib, val) in sourceDb.attributes.items():
+        targetDb.addAttribute(
+            attrib, val)
+
     # copy tx-frames
     for frame in sourceDb.frames:
         if bu.name in frame.transmitter:
