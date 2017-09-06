@@ -59,6 +59,32 @@ def copyBUwithFrames(buId, sourceDb, targetDb):
 
     targetDb.boardUnits.add(bu)
 
+    #copy defines
+    defaults = {}
+    for (typeOf, define) in sourceDb.globalDefines.items():
+        targetDb.addGlobalDefines(
+            typeOf, define.definition)
+        if typeOf not in defaults and define.defaultValue is not None:
+            defaults[typeOf] = define.defaultValue
+    for (typeOf, define) in sourceDb.buDefines.items():
+        targetDb.addBUDefines(
+            typeOf, define.definition)
+        if typeOf not in defaults and define.defaultValue is not None:
+            defaults[typeOf] = define.defaultValue
+    for (typeOf, define) in sourceDb.frameDefines.items():
+        targetDb.addFrameDefines(
+            typeOf, define.definition)
+        if typeOf not in defaults and define.defaultValue is not None:
+            defaults[typeOf] = define.defaultValue
+    for (typeOf, define) in sourceDb.signalDefines.items():
+        targetDb.addSignalDefines(
+            typeOf, define.definition)
+        if typeOf not in defaults and define.defaultValue is not None:
+            defaults[typeOf] = define.defaultValue
+    for define in sorted(defaults):
+        targetDb.addDefineDefault(
+            define, defaults[define])
+
     # copy tx-frames
     for frame in sourceDb.frames:
         if bu.name in frame.transmitter:
