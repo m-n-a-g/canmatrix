@@ -577,7 +577,7 @@ def load(f, **options):
             for bu in temp.group(2).split(','):
                 botschaft.addTransmitter(bu)
         elif decoded.startswith("CM_ SG_ "):
-            pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"(.*\X*)\";"
+            pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"(\X*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -612,7 +612,7 @@ def load(f, **options):
                     followUp = FollowUps.signalComment
 
         elif decoded.startswith("CM_ BO_ "):
-            pattern = "^CM\_ BO\_ *(\w+) *\"(.*)\";"
+            pattern = "^CM\_ BO\_ *(\w+) *\"(\X*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
