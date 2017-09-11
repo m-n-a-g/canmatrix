@@ -271,7 +271,7 @@ def dump(db, f, **options):
                          "%d " %
                          bo.id +
                          name +
-                         ' "').encode(dbcExportEncoding, 'ignore'))
+                         '"').encode(dbcExportEncoding, 'ignore'))
                     f.write(
                             signal.comment.replace(
                                 '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
@@ -577,7 +577,7 @@ def load(f, **options):
             for bu in temp.group(2).split(','):
                 botschaft.addTransmitter(bu)
         elif decoded.startswith("CM_ SG_ "):
-            pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"([(A-Za-z0-9[-_(-\/ :.//=*+\n]+)\";"
+            pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"(.*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -612,7 +612,7 @@ def load(f, **options):
                     followUp = FollowUps.signalComment
 
         elif decoded.startswith("CM_ BO_ "):
-            pattern = "^CM\_ BO\_ *(\w+) *\"([(A-Za-z0-9[-_(-\/ :.//=*+\n]+)\";"
+            pattern = "^CM\_ BO\_ *(\w+) *\"(.*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
