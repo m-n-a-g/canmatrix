@@ -165,7 +165,12 @@ def dump(db, f, **options):
             normalizeName(s.name, whitespaceReplacement) for s in bo.signals
         )
         duplicate_signal_counter = collections.Counter()
-        for signal in sorted(bo.signals, key=methodcaller('getStartbit',bitNumbering=1)):
+        if True == options["dbcExportSorted"]:
+            boSignals = sorted(bo.signals, key=methodcaller('getStartbit',bitNumbering=1))
+        else:
+            boSignals = bo.signals
+
+        for signal in boSignals:
             if signal.multiplex == 'Multiplexor' and multiplex_written:
                 continue
 
@@ -229,7 +234,7 @@ def dump(db, f, **options):
                     '"',
                     '\\"').encode(dbcExportCommentEncoding, 'ignore'))
             f.write('";\n'.encode(dbcExportEncoding))
-            if 'dbcExportSorted' not in options or False == options["dbcExportSorted"]:
+            if False == options["dbcExportSorted"]:
                     for signal in bo.signals:
                         if signal.comment is not None and signal.comment.__len__() > 0:
                             name = output_names[bo][signal]
@@ -238,12 +243,12 @@ def dump(db, f, **options):
                                  "%d " %
                                  bo.id +
                                 name +
-                                 '"').encode(dbcExportEncoding, 'ignore'))
+                                 ' "').encode(dbcExportEncoding, 'ignore'))
                             f.write(
                                    signal.comment.replace(
                                         '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
                             f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
-        elif bo.comment is None:
+        elif bo.comment is None and False == options["dbcExportSorted"]:
             for signal in bo.signals:
                 if signal.comment is not None and signal.comment.__len__() > 0:
                     name = output_names[bo][signal]
@@ -252,7 +257,7 @@ def dump(db, f, **options):
                          "%d " %
                          bo.id +
                          name +
-                         '"').encode(dbcExportEncoding, 'ignore'))
+                         ' "').encode(dbcExportEncoding, 'ignore'))
                     f.write(
                             signal.comment.replace(
                                 '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
@@ -271,7 +276,7 @@ def dump(db, f, **options):
                          "%d " %
                          bo.id +
                          name +
-                         '"').encode(dbcExportEncoding, 'ignore'))
+                         ' "').encode(dbcExportEncoding, 'ignore'))
                     f.write(
                             signal.comment.replace(
                                 '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
@@ -279,7 +284,7 @@ def dump(db, f, **options):
 
     f.write("\n".encode(dbcExportEncoding))
 
-    # boarUnit comments
+    # boardUnit comments
     for bu in db.boardUnits:
         if bu.comment is not None and bu.comment.__len__() > 0:
             f.write(
@@ -293,7 +298,11 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     defaults = {}
-    for (type, define) in sorted(list(db.signalDefines.items())):
+    if True == options["dbcExportSorted"]:
+        sigDefines = sorted(list(db.signalDefines.items()))
+    else:
+        sigDefines = list(db.signalDefines.items())
+    for (type, define) in sigDefines:
         f.write(
             ('BA_DEF_ SG_ "' +
              type +
@@ -304,7 +313,12 @@ def dump(db, f, **options):
             ';\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
-    for (type, define) in sorted(list(db.frameDefines.items())):
+
+    if True == options["dbcExportSorted"]:
+        frDefines = sorted(list(db.frameDefines.items()))
+    else:
+        frDefines = list(db.frameDefines.items())
+    for (type, define) in frDefines:
         f.write(
             ('BA_DEF_ BO_ "' +
              type +
@@ -315,7 +329,12 @@ def dump(db, f, **options):
             ';\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
-    for (type, define) in sorted(list(db.buDefines.items())):
+
+    if True == options["dbcExportSorted"]:
+        ecuDefines = sorted(list(db.buDefines.items()))
+    else:
+        ecuDefines = list(db.buDefines.items())
+    for (type, define) in ecuDefines:
         f.write(
             ('BA_DEF_ BU_ "' +
              type +
@@ -326,7 +345,12 @@ def dump(db, f, **options):
             ';\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
-    for (type, define) in sorted(list(db.globalDefines.items())):
+
+    if True == options["dbcExportSorted"]:
+        netDefines = sorted(list(db.globalDefines.items()))
+    else:
+        netDefines = list(db.globalDefines.items())
+    for (type, define) in netDefines:
         f.write(
             ('BA_DEF_ "' +
              type +
@@ -338,7 +362,11 @@ def dump(db, f, **options):
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
 
-    for define in sorted(defaults):
+    if True == options["dbcExportSorted"]:
+        defDefines = sorted(defaults)
+    else:
+        defDefines = defaults
+    for define in defDefines:
         f.write(
             ('BA_DEF_DEF_ "' +
              define +
@@ -350,7 +378,11 @@ def dump(db, f, **options):
 
     # boardunit-attributes:
     for bu in db.boardUnits:
-        for attrib, val in sorted(bu.attributes.items()):
+        if True == options["dbcExportSorted"]:
+            ecuAttribs = sorted(bu.attributes.items())
+        else:
+            ecuAttribs = bu.attributes.items()
+        for attrib, val in ecuAttribs:
             if db.buDefines[attrib].type == "STRING":
                 val = '"' + val + '"'
             elif not val:
@@ -366,7 +398,11 @@ def dump(db, f, **options):
     f.write("\n".encode(dbcExportEncoding))
 
     # global-attributes:
-    for attrib, val in sorted(db.attributes.items()):
+    if True == options["dbcExportSorted"]:
+        netAttribs = sorted(db.attributes.items())
+    else:
+        netAttribs = db.attributes.items()
+    for attrib, val in netAttribs:
         if db.globalDefines[attrib].type == "STRING":
             val = '"' + val + '"'
         elif not val:
@@ -377,7 +413,11 @@ def dump(db, f, **options):
 
     # messages-attributes:
     for frame in dbFrames:
-        for attrib, val in sorted(frame.attributes.items()):
+        if True == options["dbcExportSorted"]:
+            frAttribs = sorted(frame.attributes.items())
+        else:
+            frAttribs = frame.attributes.items()
+        for attrib, val in frAttribs:
             if db.frameDefines[attrib].type == "STRING":
                 val = '"' + val + '"'
             elif not val:
@@ -389,7 +429,11 @@ def dump(db, f, **options):
     # signal-attributes:
     for frame in dbFrames:
         for signal in frame.signals:
-            for attrib, val in sorted(signal.attributes.items()):
+            if True == options["dbcExportSorted"]:
+                sigAttribs = sorted(signal.attributes.items())
+            else:
+                sigAttribs = signal.attributes.items()
+            for attrib, val in sigAttribs:
                 name = output_names[frame][signal]
                 if db.signalDefines[attrib].type == "STRING":
                     val = '"' + val + '"'
@@ -469,12 +513,11 @@ def load(f, **options):
     for line in f:
         i = i + 1
         l = line.strip()
-        if l.__len__() == 0:
-            continue
+
         if followUp == FollowUps.signalComment:
             try:
                 comment += "\n" + \
-                    l.decode(dbcCommentEncoding).replace('\\"', '"')
+                    l.decode(dbcCommentEncoding).replace('\\"', '"').replace(u"\u2018", u"\u0027").replace(u"\u2019", u"\u0027")
             except:
                 logger.error("Error decoding line: %d (%s)" % (i, line))
             if l.endswith(b'";'):
@@ -485,7 +528,7 @@ def load(f, **options):
         elif followUp == FollowUps.frameComment:
             try:
                 comment += "\n" + \
-                    l.decode(dbcCommentEncoding).replace('\\"', '"')
+                    l.decode(dbcCommentEncoding).replace('\\"', '"').replace(u"\u2018", u"\u0027").replace(u"\u2019", u"\u0027")
             except:
                 logger.error("Error decoding line: %d (%s)" % (i, line))
             if l.endswith(b'";'):
@@ -496,7 +539,7 @@ def load(f, **options):
         elif followUp == FollowUps.boardUnitComment:
             try:
                 comment += "\n" + \
-                    l.decode(dbcCommentEncoding).replace('\\"', '"')
+                    l.decode(dbcCommentEncoding).replace('\\"', '"').replace(u"\u2018", u"\u0027").replace(u"\u2019", u"\u0027")
             except:
                 logger.error("Error decoding line: %d (%s)" % (i, line))
             if l.endswith(b'";'):
@@ -504,7 +547,10 @@ def load(f, **options):
                 if boardUnit is not None:
                     boardUnit.addComment(comment[0:-2])
             continue
-        decoded = l.decode(dbcImportEncoding)
+
+        if l.__len__() == 0:
+            continue
+        decoded = l.decode(dbcImportEncoding).replace(u"\u2018", u"\u0027").replace(u"\u2019", u"\u0027")
         if decoded.startswith("BO_ "):
             regexp = re.compile("^BO\_ (\w+) (\w+) *: (\w+) (\w+)")
             temp = regexp.match(decoded)
@@ -514,7 +560,7 @@ def load(f, **options):
                                   dlc=temp.group(3),
                                   transmitter=temp.group(4).split()))
         elif decoded.startswith("SG_ "):
-            pattern = "^SG\_ (\w+) : (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
+            pattern = r"^SG\_ (\w+) : (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
             regexp = re.compile(pattern)
             temp = regexp.match(decoded)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
@@ -539,9 +585,8 @@ def load(f, **options):
                     tempSig.setStartbit(int(temp.group(2)), bitNumbering=1)
                 db._fl.addSignalToLastFrame(tempSig)
             else:
-                pattern = "^SG\_ (\w+) (\w+) *: (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
+                pattern = r"^SG\_ (\w+) (\w+) *: (\d+)\|(\d+)@(\d+)([\+|\-]) \(([0-9.+\-eE]+),([0-9.+\-eE]+)\) ?\[([0-9.+\-eE]+)\|([0-9.+\-eE]+)\] \"(.*)\" (.*)"
                 regexp = re.compile(pattern)
-                print(decoded)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
                 temp_raw = regexp_raw.match(l)
@@ -571,13 +616,13 @@ def load(f, **options):
                 db._fl.addSignalToLastFrame(tempSig)
 
         elif decoded.startswith("BO_TX_BU_ "):
-            regexp = re.compile("^BO_TX_BU_ ([0-9]+) *: *(.+);")
+            regexp = re.compile(r"^BO_TX_BU_ ([0-9]+) *: *(.+);")
             temp = regexp.match(decoded)
             botschaft = db.frameById(temp.group(1))
             for bu in temp.group(2).split(','):
                 botschaft.addTransmitter(bu)
         elif decoded.startswith("CM_ SG_ "):
-            pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"(.*)\";"
+            pattern = r"^CM\_ SG\_ *(\w+) *(\w+) *\"(.*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -594,7 +639,7 @@ def load(f, **options):
                             "Error decoding line: %d (%s)" %
                             (i, line))
             else:
-                pattern = "^CM\_ SG\_ *(\w+) *(\w+) *\"(.*)"
+                pattern = r"^CM\_ SG\_ *(\w+) *(\w+) *\"(.*)"
                 regexp = re.compile(pattern)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
@@ -610,9 +655,12 @@ def load(f, **options):
                             "Error decoding line: %d (%s)" %
                             (i, line))
                     followUp = FollowUps.signalComment
-
+                else:
+                    logger.info(
+                        "Warning: Error decoding line: %d (%s)" %
+                       (i, line))
         elif decoded.startswith("CM_ BO_ "):
-            pattern = "^CM\_ BO\_ *(\w+) *\"(.*)\";"
+            pattern = r"^CM\_ BO\_ *(\w+) *\"(.*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -628,7 +676,7 @@ def load(f, **options):
                             "Error decoding line: %d (%s)" %
                             (i, line))
             else:
-                pattern = "^CM\_ BO\_ *(\w+) *\"(.*)"
+                pattern = r"^CM\_ BO\_ *(\w+) *\"(.*)"
                 regexp = re.compile(pattern)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
@@ -643,8 +691,12 @@ def load(f, **options):
                             "Error decoding line: %d (%s)" %
                             (i, line))
                     followUp = FollowUps.frameComment
+                else:
+                    logger.info(
+                        "Warning: Error decoding line: %d (%s)" %
+                       (i, line))
         elif decoded.startswith("CM_ BU_ "):
-            pattern = "^CM\_ BU\_ *(\w+) *\"(.*)\";"
+            pattern = r"^CM\_ BU\_ *(\w+) *\"(.*)\";"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -660,7 +712,7 @@ def load(f, **options):
                             "Error decoding line: %d (%s)" %
                             (i, line))
             else:
-                pattern = "^CM\_ BU\_ *(\w+) *\"(.*)"
+                pattern = r"^CM\_ BU\_ *(\w+) *\"(.*)"
                 regexp = re.compile(pattern)
                 regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
                 temp = regexp.match(decoded)
@@ -676,8 +728,12 @@ def load(f, **options):
                                 "Error decoding line: %d (%s)" %
                                 (i, line))
                         followUp = FollowUps.boardUnitComment
+                else:
+                    logger.info(
+                        "Warning: Error decoding line: %d (%s)" %
+                       (i, line))
         elif decoded.startswith("BU_:"):
-            pattern = "^BU\_\:(.*)"
+            pattern = r"^BU\_\:(.*)"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -686,6 +742,10 @@ def load(f, **options):
                 for ele in myTempListe:
                     if len(ele.strip()) > 1:
                         db._BUs.add(BoardUnit(ele))
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                    (i, line))
 
         elif decoded.startswith("BS_:"):
             NS = 0
@@ -694,15 +754,18 @@ def load(f, **options):
             NS = 1
 
         elif NS > 0:
-            pattern = "([^n]+[\w]+)"
+            pattern = r"([\w]+)"
             regexp = re.compile(pattern)
             temp = regexp.match(decoded)
             if temp:
                 db.addNewSymbol(NS-1,temp.group(1))
-            NS = NS + 1
-
+                NS = NS + 1
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("VAL_ "):
-            regexp = re.compile("^VAL\_ (\w+) (\w+) (.*);")
+            regexp = re.compile(r"^VAL\_ (\w+) (\w+) (.*);")
             temp = regexp.match(decoded)
             if temp:
                 botschaftId = temp.group(1)
@@ -720,9 +783,12 @@ def load(f, **options):
                         logger.error("Error with Line: " + str(tempList))
                 else:
                     logger.info("Warning: enviroment variables currently not supported")
-
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("VAL_TABLE_ "):
-            regexp = re.compile("^VAL\_TABLE\_ (\w+) (.*);")
+            regexp = re.compile(r"^VAL\_TABLE\_ (\w+) (.*);")
             temp = regexp.match(decoded)
             if temp:
                 tableName = temp.group(1)
@@ -739,7 +805,7 @@ def load(f, **options):
                 logger.debug(l)
 
         elif decoded.startswith("BA_DEF_ SG_ "):
-            pattern = "^BA\_DEF\_ SG\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
+            pattern = r"^BA\_DEF\_ SG\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -747,8 +813,12 @@ def load(f, **options):
             if temp:
                 db.addSignalDefines(temp.group(1),
                                     temp_raw.group(2).decode(dbcImportEncoding))
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("BA_DEF_ BO_ "):
-            pattern = "^BA\_DEF\_ BO\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
+            pattern = r"^BA\_DEF\_ BO\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -756,8 +826,12 @@ def load(f, **options):
             if temp:
                 db.addFrameDefines(temp.group(1),
                                    temp_raw.group(2).decode(dbcImportEncoding))
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("BA_DEF_ BU_ "):
-            pattern = "^BA\_DEF\_ BU\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
+            pattern = r"^BA\_DEF\_ BU\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -765,8 +839,12 @@ def load(f, **options):
             if temp:
                 db.addBUDefines(temp.group(1),
                                 temp_raw.group(2).decode(dbcImportEncoding))
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("BA_DEF_ "):
-            pattern = "^BA\_DEF\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
+            pattern = r"^BA\_DEF\_ +\"([A-Za-z0-9\-_]+)\" +(.+);"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -774,22 +852,25 @@ def load(f, **options):
             if temp:
                 db.addGlobalDefines(temp.group(1),
                                     temp_raw.group(2).decode(dbcImportEncoding))
-
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("BA_ "):
-            regexp = re.compile("^BA\_ +\"[A-Za-z0-9[-_(-\/ .]+\" +(.+)")
+            regexp = re.compile(r"^BA\_ +\"[A-Za-z0-9[-_(-\/ .]+\" +(.+)")
             tempba = regexp.match(decoded)
             if tempba.group(1).strip().startswith("BO_ "):
-                regexp = re.compile("^BA\_ \"(.*)\" BO\_ (\w+) (.+);")
+                regexp = re.compile(r"^BA\_ \"(.*)\" BO\_ (\w+) (.+);")
                 temp = regexp.match(decoded)
                 db.frameById(int(temp.group(2))).addAttribute(
                     temp.group(1), temp.group(3))
             elif tempba.group(1).strip().startswith("SG_ "):
-                regexp = re.compile("^BA\_ \"(.*)\" SG\_ (\w+) (\w+) (.+);")
+                regexp = re.compile(r"^BA\_ \"(.*)\" SG\_ (\w+) (\w+) (.+);")
                 temp = regexp.match(decoded)
                 db.frameById(int(temp.group(2))).signalByName(
                     temp.group(3)).addAttribute(temp.group(1), temp.group(4))
             elif tempba.group(1).strip().startswith("BU_ "):
-                regexp = re.compile("^BA\_ \"(.*)\" BU\_ (\w+) (.+);")
+                regexp = re.compile(r"^BA\_ \"(.*)\" BU\_ (\w+) (.+);")
                 temp = regexp.match(decoded)
                 db._BUs.byName(
                     temp.group(2)).addAttribute(
@@ -797,30 +878,39 @@ def load(f, **options):
                     temp.group(3))
             else:
                 regexp = re.compile(
-                "^BA\_ \"([A-Za-z0-9[-_(-\/ .]+)\" +([\"A-Za-z0-9[-_(-\/ .]+);")
+                r"^BA\_ \"([A-Za-z0-9[-_(-\/ .]+)\" +([\"A-Za-z0-9[-_(-\/ .]+);")
                 temp = regexp.match(decoded)
                 if temp:
                     db.addAttribute(temp.group(1), temp.group(2))
-
+                else:
+                    logger.info(
+                       "Warning: Error decoding line: %d (%s)" %
+                       (i, line))
         elif decoded.startswith("SIG_GROUP_ "):
-            regexp = re.compile("^SIG\_GROUP\_ +(\w+) +(\w+) +(\w+) +\:(.*);")
+            regexp = re.compile(r"^SIG\_GROUP\_ +(\w+) +(\w+) +(\w+) +\:(.*);")
             temp = regexp.match(decoded)
             frame = db.frameById(temp.group(1))
             if frame is not None:
                 signalArray = temp.group(4).split(' ')
                 frame.addSignalGroup(temp.group(2), temp.group(3), signalArray)
-                
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("SIG_VALTYPE_ "):
-            regexp = re.compile("^SIG\_VALTYPE\_ +(\w+) +(\w+) +\:(.*);")
+            regexp = re.compile(r"^SIG\_VALTYPE\_ +(\w+) +(\w+) +\:(.*);")
             temp = regexp.match(decoded)
             frame = db.frameById(temp.group(1))
             if frame:
                 signal = frame.signalByName(temp.group(2))
                 signal.is_float = True
 #                SIG_VALTYPE_ 0 float : 1;
-                
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
         elif decoded.startswith("BA_DEF_DEF_ "):
-            pattern = "^BA\_DEF\_DEF\_ +\"([A-Za-z0-9\-_]+)\" +(.+)\;"
+            pattern = r"^BA\_DEF\_DEF\_ +\"([A-Za-z0-9\-_]+)\" +(.+)\;"
             regexp = re.compile(pattern)
             regexp_raw = re.compile(pattern.encode(dbcImportEncoding))
             temp = regexp.match(decoded)
@@ -828,6 +918,10 @@ def load(f, **options):
             if temp:
                 db.addDefineDefault(temp.group(1),
                                     temp_raw.group(2).decode(dbcImportEncoding))
+            else:
+                logger.info(
+                    "Warning: Error decoding line: %d (%s)" %
+                   (i, line))
 #               else:
 #                       print "Unrecocniced line: " + l + " (%d) " % i
 # Backtracking
