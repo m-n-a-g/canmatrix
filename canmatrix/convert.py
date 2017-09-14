@@ -98,6 +98,12 @@ def convert(infile, outfileName, **options):
             for renameTuple in renameTuples:
                 old, new = renameTuple.split(':')
                 db.renameFrame(old, new)
+        if 'addToNameAllFrames' in options and options['addToNameAllFrames'] is not None:
+            addToNameString = options['addToNameAllFrames']
+            for frame in db.frames:
+                old = frame.name
+                new = old + addToNameString
+                db.renameFrame(old, new)
         if 'deleteFrame' in options and options['deleteFrame'] is not None:
             deleteFrameList = options['deleteFrame'].split(',')
             for frame in deleteFrameList:
@@ -264,24 +270,26 @@ def main():
 
     parser.add_option("", "--deleteEcu",
                       dest="deleteEcu", default=None,
-                      help="delete Ecu form databases. (comma separated list)\nSyntax: --deleteEcu=myEcu,mySecondEcu")
+                      help="delete Ecu from databases. (comma separated list)\nSyntax: --deleteEcu=myEcu,mySecondEcu")
     parser.add_option("", "--renameEcu",
                       dest="renameEcu", default=None,
-                      help="rename Ecu form databases. (comma separated list)\nSyntax: --renameEcu=myOldEcu:myNewEcu,mySecondEcu:mySecondNewEcu")
+                      help="rename Ecu from databases. (comma separated list)\nSyntax: --renameEcu=myOldEcu:myNewEcu,mySecondEcu:mySecondNewEcu")
 
     parser.add_option("", "--deleteFrame",
                       dest="deleteFrame", default=None,
-                      help="delete Frame form databases. (comma separated list)\nSyntax: --deleteFrame=myFrame1,mySecondFrame")
+                      help="delete Frame from databases. (comma separated list)\nSyntax: --deleteFrame=myFrame1,mySecondFrame")
     parser.add_option("", "--renameFrame",
                       dest="renameFrame", default=None,
-                      help="rename Frame form databases. (comma separated list)\nSyntax: --renameFrame=myOldFrame:myNewFrame,mySecondFrame:mySecondNewFrame")
-
+                      help="rename Frame from databases. (comma separated list)\nSyntax: --renameFrame=myOldFrame:myNewFrame,mySecondFrame:mySecondNewFrame")
+    parser.add_option("", "--addToNameAllFrames",
+                      dest="addToNameAllFrames", default=None,
+                      help="rename all Frames in output database with option input added last in name. \nSyntax: --addToNameAllFrames=addThisToFrameNames")
     parser.add_option("", "--deleteSignal",
                       dest="deleteSignal", default=None,
-                      help="delete Signal form databases. (comma separated list)\nSyntax: --deleteSignal=mySignal1,mySecondSignal")
+                      help="delete Signal from databases. (comma separated list)\nSyntax: --deleteSignal=mySignal1,mySecondSignal")
     parser.add_option("", "--renameSignal",
                       dest="renameSignal", default=None,
-                      help="rename Signal form databases. (comma separated list)\nSyntax: --renameSignal=myOldSignal:myNewSignal,mySecondSignal:mySecondNewSignal")
+                      help="rename Signal from databases. (comma separated list)\nSyntax: --renameSignal=myOldSignal:myNewSignal,mySecondSignal:mySecondNewSignal")
 
     (cmdlineOptions, args) = parser.parse_args()
     if len(args) < 2:
