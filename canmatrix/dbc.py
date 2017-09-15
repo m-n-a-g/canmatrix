@@ -125,9 +125,13 @@ def dump(db, f, **options):
     output_names = collections.defaultdict(dict)
 
     for frame in db.frames:
+        if True == options["dbcExportSorted"]:
+            boSignals = sorted(frame.signals, key=methodcaller('getStartbit',bitNumbering=1))
+        else:
+            boSignals = frame.signals
         normalized_names = collections.OrderedDict((
             (s, normalizeName(s.name, whitespaceReplacement))
-            for s in frame.signals
+            for s in boSignals
         ))
 
         duplicate_signal_totals = collections.Counter(normalized_names.values())
@@ -135,7 +139,7 @@ def dump(db, f, **options):
 
         numbered_names = collections.OrderedDict()
 
-        for signal in frame.signals:
+        for signal in boSignals:
             name = normalized_names[signal]
             duplicate_signal_counter[name] += 1
             if duplicate_signal_totals[name] > 1:
@@ -223,6 +227,10 @@ def dump(db, f, **options):
 
     # frame comments
     for bo in dbFrames:
+        if True == options["dbcExportSorted"]:
+            boSignals = sorted(bo.signals, key=methodcaller('getStartbit',bitNumbering=1))
+        else:
+            boSignals = bo.signals
         if bo.comment is not None and bo.comment.__len__() > 0 and bo.comment != "\n" and bo.comment != " ":
             f.write(
                 ("CM_ BO_ " +
@@ -235,7 +243,7 @@ def dump(db, f, **options):
                     '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
             f.write('";\n'.encode(dbcExportEncoding))
             if False == options["dbcExportSorted"]:
-                    for signal in bo.signals:
+                    for signal in boSignals:
                         if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                             name = output_names[bo][signal]
                             f.write(
@@ -249,7 +257,7 @@ def dump(db, f, **options):
                                         '"', '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
                             f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
         elif (bo.comment is None or bo.comment != "\n" or bo.comment != " ") and False == options["dbcExportSorted"]:
-            for signal in bo.signals:
+            for signal in boSignals:
                 if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                     name = output_names[bo][signal]
                     f.write(
@@ -268,7 +276,11 @@ def dump(db, f, **options):
     # signal comments
     if True == options["dbcExportSorted"]:
         for bo in dbFrames:
-            for signal in bo.signals:
+            if True == options["dbcExportSorted"]:
+                boSignals = sorted(bo.signals, key=methodcaller('getStartbit',bitNumbering=1))
+            else:
+                boSignals = bo.signals
+            for signal in boSignals:
                 if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                     name = output_names[bo][signal]
                     f.write(
