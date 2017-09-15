@@ -447,7 +447,7 @@ def dump(db, f, **options):
                      name +
                      ' ' +
                      val +
-                     ' ;\n').encode(dbcExportEncoding))
+                     ';\n').encode(dbcExportEncoding))
             if signal.is_float:
                 if int(signal.signalsize) > 32:
                     f.write(('SIG_VALTYPE_ %d %s : 2;\n' % (frame.id, output_names[bo][signal])).encode(dbcExportEncoding))
