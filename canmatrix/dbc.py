@@ -223,20 +223,20 @@ def dump(db, f, **options):
 
     # frame comments
     for bo in dbFrames:
-        if bo.comment is not None and bo.comment.__len__() > 0:
+        if bo.comment is not None and bo.comment.__len__() > 0 and bo.comment != "\n" and bo.comment != " ":
             f.write(
                 ("CM_ BO_ " +
                  "%d " %
                  bo.id +
                  '"').encode(dbcExportEncoding))
             f.write(
-                bo.comment.replace(
+                re.sub(r"$\n", "", bo.comment.replace(
                     '"',
-                    '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                    '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
             f.write('";\n'.encode(dbcExportEncoding))
             if False == options["dbcExportSorted"]:
                     for signal in bo.signals:
-                        if signal.comment is not None and signal.comment.__len__() > 0:
+                        if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                             name = output_names[bo][signal]
                             f.write(
                                 ("CM_ SG_ " +
@@ -245,12 +245,12 @@ def dump(db, f, **options):
                                 name +
                                  ' "').encode(dbcExportEncoding, 'ignore'))
                             f.write(
-                                   signal.comment.replace(
-                                        '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                                   re.sub(r"$\n", "", signal.comment.replace(
+                                        '"', '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
                             f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
-        elif bo.comment is None and False == options["dbcExportSorted"]:
+        elif (bo.comment is None or bo.comment != "\n" or bo.comment != " ") and False == options["dbcExportSorted"]:
             for signal in bo.signals:
-                if signal.comment is not None and signal.comment.__len__() > 0:
+                if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                     name = output_names[bo][signal]
                     f.write(
                         ("CM_ SG_ " +
@@ -259,8 +259,8 @@ def dump(db, f, **options):
                          name +
                          ' "').encode(dbcExportEncoding, 'ignore'))
                     f.write(
-                            signal.comment.replace(
-                                '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                            re.sub(r"$\n", "", signal.comment.replace(
+                                '"', '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
                     f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
 
     f.write("\n".encode(dbcExportEncoding))
@@ -269,7 +269,7 @@ def dump(db, f, **options):
     if True == options["dbcExportSorted"]:
         for bo in dbFrames:
             for signal in bo.signals:
-                if signal.comment is not None and signal.comment.__len__() > 0:
+                if signal.comment is not None and signal.comment.__len__() > 0 and signal.comment != "\n" and signal.comment != " ":
                     name = output_names[bo][signal]
                     f.write(
                         ("CM_ SG_ " +
@@ -278,22 +278,20 @@ def dump(db, f, **options):
                          name +
                          ' "').encode(dbcExportEncoding, 'ignore'))
                     f.write(
-                            signal.comment.replace(
-                                '"', '\\"').encode(dbcExportCommentEncoding, 'ignore'))
+                            re.sub(r"$\n", "", signal.comment.replace(
+                                '"', '\\"')).encode(dbcExportCommentEncoding, 'ignore'))
                     f.write('";\n'.encode(dbcExportEncoding, 'ignore'))
 
     f.write("\n".encode(dbcExportEncoding))
 
     # boardUnit comments
     for bu in db.boardUnits:
-        if bu.comment is not None and bu.comment.__len__() > 0:
+        if bu.comment is not None and bu.comment.__len__() > 0 and bu.comment != "\n" and bu.comment != " ":
             f.write(
                 ("CM_ BU_ " +
                  bu.name +
                  ' "' +
-                 bu.comment.replace(
-                     '"',
-                     '\\"') +
+                 re.sub(r"$\n", "", bu.comment.replace('"','\\"')) +
                     '";\n').encode(dbcExportCommentEncoding,'ignore'))
     f.write("\n".encode(dbcExportEncoding))
 
@@ -310,7 +308,7 @@ def dump(db, f, **options):
             define.definition.encode(
                 dbcExportEncoding,
                 'replace') +
-            ';\n'.encode(dbcExportEncoding))
+            ' ;\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
 
@@ -326,7 +324,7 @@ def dump(db, f, **options):
             define.definition.encode(
                 dbcExportEncoding,
                 'replace') +
-            ';\n'.encode(dbcExportEncoding))
+            ' ;\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
 
@@ -342,7 +340,7 @@ def dump(db, f, **options):
             define.definition.encode(
                 dbcExportEncoding,
                 'replace') +
-            ';\n'.encode(dbcExportEncoding))
+            ' ;\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
 
@@ -358,7 +356,7 @@ def dump(db, f, **options):
             define.definition.encode(
                 dbcExportEncoding,
                 'replace') +
-            ';\n'.encode(dbcExportEncoding))
+            ' ;\n'.encode(dbcExportEncoding))
         if type not in defaults and define.defaultValue is not None:
             defaults[type] = define.defaultValue
 
@@ -449,7 +447,7 @@ def dump(db, f, **options):
                      name +
                      ' ' +
                      val +
-                     ';\n').encode(dbcExportEncoding))
+                     ' ;\n').encode(dbcExportEncoding))
             if signal.is_float:
                 if int(signal.signalsize) > 32:
                     f.write(('SIG_VALTYPE_ %d %s : 2;\n' % (frame.id, output_names[bo][signal])).encode(dbcExportEncoding))
@@ -475,8 +473,8 @@ def dump(db, f, **options):
                 for attrib, val in sorted(
                         signal.values.items(), key=lambda x: int(x[0])):
                     f.write(
-                        (' ' + str(attrib) + ' "' + val + '"').encode(dbcExportEncoding))
-                f.write(";\n".encode(dbcExportEncoding))
+                        (' ' + str(attrib) + ' "' + re.sub(r" $", "", re.sub(r"^ ", "", val)) + '"').encode(dbcExportEncoding))
+                f.write(" ;\n".encode(dbcExportEncoding))
 
     # signal-groups:
     for bo in dbFrames:
